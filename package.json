@@ -1,49 +1,40 @@
 {
-  "name": "integr8express",
+  "name": "express-typescript-app",
   "version": "0.0.0",
   "private": true,
+  "author": "Debojyoti Chatterjee",
+  "license": "MIT",
   "scripts": {
-    "build": "tsc",
     "start": "node dist/server.js",
     "dev": "nodemon --exec ts-node src/server.ts",
-    "dev:debug": "nodemon --exec ts-node --inspect src/server.ts",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
-    "format": "prettier --write src/**/*.ts",
-    "format:check": "prettier --check src/**/*.ts",
-    "type-check": "tsc --noEmit",
-    "clean": "rimraf dist",
-    "prebuild": "npm run clean && npm run lint && npm run type-check",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "prod": "npm run build && npm start"
   },
+  "keywords": [
+    "express",
+    "typescript",
+    "handlebars",
+    "worker-threads"
+  ],
   "dependencies": {
     "cookie-parser": "~1.4.4",
-    "cors": "^2.8.5",
     "debug": "~2.6.9",
-    "dotenv": "^17.2.0",
     "express": "~4.16.1",
+    "express-handlebars": "^8.0.3",
     "hbs": "~4.0.4",
-    "helmet": "^8.1.0",
     "http-errors": "~1.6.3",
-    "loggernaut": "^1.1.1",
     "morgan": "~1.9.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.31.0",
-    "@types/cors": "^2.8.19",
+    "@types/cookie-parser": "^1.4.9",
     "@types/express": "^5.0.3",
     "@types/morgan": "^1.9.10",
-    "@types/node": "^24.1.0",
-    "@typescript-eslint/eslint-plugin": "^8.38.0",
-    "@typescript-eslint/parser": "^8.38.0",
-    "eslint": "^9.31.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.3",
-    "globals": "^16.3.0",
+    "@types/node": "^24.6.2",
     "nodemon": "^3.1.10",
-    "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.38.0"
+    "typescript": "^5.9.3"
   }
 }

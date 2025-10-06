@@ -1,50 +1,57 @@
+#!/usr/bin/env node
+
+/**
+ * Server Entry Point
+ * 
+ * This file is responsible for starting the HTTP server.
+ * It's separated from app.ts to make the application more testable
+ * and to follow the single responsibility principle.
+ */
 
 import app from './app';
-import dotenv from 'dotenv';
+import http from 'http';
+import {AddressInfo} from "node:net";
 
-// Load environment variables
-dotenv.config();
+/**
+ * Normalize a port into a number, string, or false.
+ * This handles various ways ports can be specified
+ */
+function normalizePort(val: string): number | string | boolean {
+  const port = parseInt(val, 10);
 
-// Get port from environment or use default
-const PORT: number = parseInt(process.env.PORT || '3000', 10);
-const HOST: string = process.env.HOST || 'localhost';
+  if (isNaN(port)) {
+    // Named pipe
+    return val;
+  }
 
-// Graceful shutdown handling
-const gracefulShutdown = (signal: string): void => {
-  console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
-  
-  server.close((err?: Error) => {
-    if (err) {
-      console.error('Error during graceful shutdown:', err);
-      process.exit(1);
-    }
-    
-    console.log('Server closed. Exiting process.');
-    process.exit(0);
-  });
-  
-  // Force close after 10 seconds
-  setTimeout(() => {
-    console.error('Forcing shutdown after timeout');
-    process.exit(1);
-  }, 10000);
-};
+  if (port >= 0) {
+    // Port number
+    return port;
+  }
 
-// Start the server
-const server = app.listen(PORT, HOST, (): void => {
-  console.log(`🚀 Server is running on http://${HOST}:${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`⏰ Started at: ${new Date().toLocaleString()}`);
-});
+  return false;
+}
 
-// Handle server errors
-server.on('error', (error: NodeJS.ErrnoException): void => {
+// Get port from environment variable or default to 3000
+// Using environment variables makes deployment to cloud platforms easier
+const port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+
+// Create the HTTP server using our Express app
+const server = http.createServer(app);
+
+/**
+ * Event listener for HTTP server "error" event.
+ * Provides friendly error messages for common issues
+ */
+function onError(error: NodeJS.ErrnoException): void {
   if (error.syscall !== 'listen') {
     throw error;
   }
 
-  const bind = typeof PORT === 'string' ? `Pipe ${PORT}` : `Port ${PORT}`;
+  const bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
 
+  // Handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
       console.error(`${bind} requires elevated privileges`);
@@ -57,22 +64,46 @@ server.on('error', (error: NodeJS.ErrnoException): void => {
     default:
       throw error;
   }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ * Logs where the server is accessible
+ */
+function onListening(): void {
+  const addr: string | AddressInfo | null | any = server.address();
+  const bind: string = typeof addr === 'string'
+    ? 'pipe ' + addr 
+    : 'port ' + addr?.port;
+  
+  console.log('=================================');
+  console.log('🚀 Server is running!');
+  console.log(`📡 Listening on ${bind}`);
+  console.log(`🌐 Open http://localhost:${addr?.port}`);
+  console.log('=================================');
+}
+
+// Start listening on the specified port
+server.listen(port);
+
+// Attach event handlers
+server.on('error', onError);
+server.on('listening', onListening);
+
+// Graceful shutdown handling
+// This ensures workers are properly terminated when the server stops
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+    process.exit(0);
+  });
 });
 
-// Listen for termination signals
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (error: Error): void => {
-  console.error('Uncaught Exception:', error);
-  process.exit(1);
+process.on('SIGINT', () => {
+  console.log('SIGINT signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+    process.exit(0);
+  });
 });
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (reason: unknown, promise: Promise<unknown>): void => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
-});
-
-export default server;

@@ -1,70 +1,66 @@
+import express, { Express, Request, Response, NextFunction } from 'express';
+import path from 'path';
+import cookieParser from 'cookie-parser';
+import logger from 'morgan';
+import { engine } from 'express-handlebars';
 
-import express, { Application, Request, Response, NextFunction } from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import dotenv from 'dotenv';
+// Import our custom routes
+import indexRouter from './routes/index';
 
-// Load environment variables
-dotenv.config();
+// Create the Express application instance
+const app: Express = express();
 
-// Create Express application instance
-const app: Application = express();
-
-// Security middleware - helmet adds various HTTP headers for security
-app.use(helmet());
-
-// CORS middleware - allows cross-origin requests
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
-  credentials: true,
+// Configure Handlebars as the view engine
+// express-handlebars gives us more features than the basic hbs package
+app.engine('hbs', engine({
+  extname: 'hbs',
+  defaultLayout: 'main',
+  layoutsDir: path.join(__dirname, '../views/layouts'),
+  partialsDir: path.join(__dirname, '../views/partials')
 }));
 
-// Request logging middleware
-app.use(morgan('combined'));
+// Tell Express where to find views and which engine to use
+app.set('views', path.join(__dirname, '../views'));
+app.set('view engine', 'hbs');
 
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+// Middleware stack - these process requests in order
+// Morgan logs HTTP requests for debugging and monitoring
+app.use(logger('dev'));
 
-// Health check endpoint
-app.get('/health', (req: Request, res: Response): void => {
-  res.status(200).json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-  });
-});
+// Parse incoming JSON payloads (for API requests)
+app.use(express.json());
 
-// Basic route
-app.get('/', (req: Request, res: Response): void => {
-  res.json({
-    message: 'Welcome to Express.js with TypeScript!',
-    version: '1.0.0',
-  });
-});
+// Parse URL-encoded bodies (from HTML forms)
+app.use(express.urlencoded({ extended: false }));
 
-// API routes placeholder
-app.use('/api', (req: Request, res: Response): void => {
-  res.json({ message: 'API routes will be implemented here' });
-});
+// Parse cookies attached to the client request
+app.use(cookieParser());
 
-// 404 handler
-app.use('*', (req: Request, res: Response): void => {
-  res.status(404).json({
-    error: 'Route not found',
-    path: req.originalUrl,
+// Serve static files (CSS, images, JavaScript) from the public directory
+app.use(express.static(path.join(__dirname, '../../public')));
+
+// Mount our route handlers
+app.use('/', indexRouter);
+
+// Error handling middleware for 404 errors
+// This catches any requests that didn't match our defined routes
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.status(404).render('error', {
+    message: 'Page Not Found',
+    error: { status: 404, stack: '' }
   });
 });
 
 // Global error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction): void => {
-  console.error('Error:', err.stack);
-  
-  res.status(500).json({
-    error: 'Internal Server Error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
-  });
+// Express recognizes this as an error handler because it has 4 parameters
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  // Set locals for the error page, only providing stack traces in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // Render the error page
+  res.status(err.status || 500);
+  res.render('error');
 });
 
 export default app;
