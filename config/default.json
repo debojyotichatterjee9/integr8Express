@@ -1,0 +1,23 @@
+{
+  "services": {
+    "rest": {
+      "host": "localhost",
+      "port": 3000
+    }
+  },
+  "cluster": {
+    "enabled": false,
+    "maxRestarts": 5,
+    "restartWindow": 60000,
+    "shutdownTimeout": 30000,
+    "workerReadyTimeout": 10000
+  },
+  "logging": {
+    "level": "info",
+    "fileLogging": false
+  },
+  "workerThreads": {
+    "poolSize": 4,
+    "taskTimeout": 30000
+  }
+}

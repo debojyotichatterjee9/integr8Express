@@ -1,0 +1,192 @@
+<div class="welcome">
+    <h2>{{message}}</h2>
+
+    <p style="margin: 20px 0; color: #555;">
+        This is a production-ready Express application with TypeScript, cluster management,
+        worker threads, and comprehensive logging. It demonstrates modern Node.js best practices
+        for building scalable web services.
+    </p>
+
+    <h3 style="color: #667eea; margin-top: 30px;">🚀 Key Features</h3>
+    <ul class="feature-list">
+        {{#each features}}
+            <li>✓ {{this}}</li>
+        {{/each}}
+    </ul>
+
+    <h3 style="color: #667eea; margin-top: 30px;">💻 System Information</h3>
+    <div style="background: #f7f7f7; padding: 15px; border-radius: 6px; margin: 15px 0;">
+        <p><strong>Process ID:</strong> {{systemInfo.pid}}</p>
+        <p><strong>Node Version:</strong> {{systemInfo.nodeVersion}}</p>
+        <p><strong>Platform:</strong> {{systemInfo.platform}}</p>
+        <p><strong>CPU Cores:</strong> {{systemInfo.cpus}}</p>
+        <p><strong>Total Memory:</strong> {{systemInfo.memory}}</p>
+    </div>
+</div>
+
+<div class="api-section">
+    <h2>🧮 Worker Thread Demo</h2>
+    <p style="margin-bottom: 15px; color: #666;">
+        This demo offloads CPU-intensive Fibonacci calculations to worker threads,
+        keeping the main thread responsive. Try different numbers to see the performance impact.
+    </p>
+
+    <div style="margin: 15px 0;">
+        <label for="numberInput" style="display: block; margin-bottom: 8px; font-weight: bold;">
+            Enter a number (1-45 recommended):
+        </label>
+        <input
+                type="number"
+                id="numberInput"
+                value="40"
+                min="1"
+                max="45"
+                style="padding: 8px; border: 2px solid #ddd; border-radius: 4px; width: 200px; font-size: 16px;"
+        />
+    </div>
+
+    <button onclick="testWorker()">Calculate with Worker Thread</button>
+    <button onclick="checkWorkerStatus()" style="margin-left: 10px; background: #764ba2;">Check Worker Status</button>
+    <button onclick="stressTest()" style="margin-left: 10px; background: #e74c3c;">Stress Test (10 tasks)</button>
+
+    <div id="result"></div>
+</div>
+
+<div class="api-section" style="margin-top: 20px;">
+    <h2>📊 API Endpoints</h2>
+    <ul style="list-style: none; padding: 0;">
+        <li style="margin: 10px 0;">
+            <strong>GET /health</strong> - Health check endpoint
+            <button onclick="fetchEndpoint('/health')" style="margin-left: 10px; padding: 6px 12px; font-size: 14px;">Test</button>
+        </li>
+        <li style="margin: 10px 0;">
+            <strong>GET /api/worker-status</strong> - Worker thread pool status
+            <button onclick="fetchEndpoint('/api/worker-status')" style="margin-left: 10px; padding: 6px 12px; font-size: 14px;">Test</button>
+        </li>
+        <li style="margin: 10px 0;">
+            <strong>GET /api/system-info</strong> - System information
+            <button onclick="fetchEndpoint('/api/system-info')" style="margin-left: 10px; padding: 6px 12px; font-size: 14px;">Test</button>
+        </li>
+    </ul>
+</div>
+
+<script>
+    // Test worker thread calculation
+    async function testWorker() {
+        const number = document.getElementById('numberInput').value;
+        const resultDiv = document.getElementById('result');
+
+        resultDiv.className = 'show loading';
+        resultDiv.innerHTML = '⏳ Calculating... This may take a moment for larger numbers.';
+
+        try {
+            const response = await fetch(`/api/calculate?num=${number}`);
+            const data = await response.json();
+
+            if (data.success) {
+                resultDiv.className = 'show';
+                resultDiv.innerHTML = `
+          <h3 style="color: #667eea; margin-bottom: 10px;">✅ Calculation Complete!</h3>
+          <p><strong>Input:</strong> ${data.input}</p>
+          <p><strong>Fibonacci Result:</strong> ${data.result.fibonacci?.toLocaleString() || 'N/A'}</p>
+          <p><strong>Is Prime:</strong> ${data.result.isPrime ? 'Yes' : 'No'}</p>
+          <p><strong>Computation Time:</strong> ${data.computationTime}</p>
+          <p><strong>Process ID:</strong> ${data.processId}</p>
+          <p style="margin-top: 10px; color: #666; font-style: italic;">
+            ${data.message}
+          </p>
+        `;
+            } else {
+                showError(resultDiv, data.error);
+            }
+        } catch (error) {
+            showError(resultDiv, error.message);
+        }
+    }
+
+    // Check worker thread pool status
+    async function checkWorkerStatus() {
+        const resultDiv = document.getElementById('result');
+        resultDiv.className = 'show loading';
+        resultDiv.innerHTML = '⏳ Checking worker status...';
+
+        try {
+            const response = await fetch('/api/worker-status');
+            const data = await response.json();
+
+            if (data.success) {
+                resultDiv.className = 'show';
+                resultDiv.innerHTML = `
+          <h3 style="color: #667eea; margin-bottom: 10px;">📊 Worker Pool Status</h3>
+          <p><strong>Total Workers:</strong> ${data.totalWorkers}</p>
+          <p><strong>Active Workers:</strong> ${data.activeWorkers}</p>
+          <p><strong>Available Workers:</strong> ${data.availableWorkers}</p>
+          <p><strong>Process ID:</strong> ${data.processId}</p>
+          <p style="margin-top: 10px; color: #666; font-style: italic;">
+            ${data.message}
+          </p>
+        `;
+            } else {
+                showError(resultDiv, data.message);
+            }
+        } catch (error) {
+            showError(resultDiv, error.message);
+        }
+    }
+
+    // Run stress test
+    async function stressTest() {
+        const resultDiv = document.getElementById('result');
+        resultDiv.className = 'show loading';
+        resultDiv.innerHTML = '⏳ Running stress test with 10 parallel tasks...';
+
+        try {
+            const response = await fetch('/api/stress-test?count=10&num=35');
+            const data = await response.json();
+
+            if (data.success) {
+                resultDiv.className = 'show';
+                resultDiv.innerHTML = `
+          <h3 style="color: #667eea; margin-bottom: 10px;">💪 Stress Test Complete!</h3>
+          <p><strong>Tasks Completed:</strong> ${data.tasksCompleted}</p>
+          <p><strong>Total Time:</strong> ${data.totalTime}</p>
+          <p><strong>Average Time:</strong> ${data.averageTime}</p>
+          <p><strong>Process ID:</strong> ${data.processId}</p>
+          <p style="margin-top: 10px; color: #666; font-style: italic;">
+            ${data.message}
+          </p>
+        `;
+            } else {
+                showError(resultDiv, data.error);
+            }
+        } catch (error) {
+            showError(resultDiv, error.message);
+        }
+    }
+
+    // Generic endpoint tester
+    async function fetchEndpoint(endpoint) {
+        const resultDiv = document.getElementById('result');
+        resultDiv.className = 'show loading';
+        resultDiv.innerHTML = `⏳ Fetching ${endpoint}...`;
+
+        try {
+            const response = await fetch(endpoint);
+            const data = await response.json();
+
+            resultDiv.className = 'show';
+            resultDiv.innerHTML = `
+        <h3 style="color: #667eea; margin-bottom: 10px;">API Response: ${endpoint}</h3>
+        <pre style="background: #f5f5f5; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 12px;">${JSON.stringify(data, null, 2)}</pre>
+      `;
+        } catch (error) {
+            showError(resultDiv, error.message);
+        }
+    }
+
+    // Show error message
+    function showError(div, message) {
+        div.className = 'show';
+        div.innerHTML = `<p style="color: red;">❌ Error: ${message}</p>`;
+    }
+</script>

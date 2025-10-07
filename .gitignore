@@ -59,3 +59,38 @@ typings/
 
 # next.js build output
 .next
+
+#====================
+
+
+# Production build
+dist/
+
+# Logs
+logs/
+
+# Environment variables
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing
+coverage/
+
+# Temporary files
+tmp/
+temp/
+

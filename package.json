@@ -1,9 +1,11 @@
 {
   "name": "express-typescript-app",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Express application with TypeScript, Handlebars, Cluster and Worker Threads",
   "private": true,
   "author": "Debojyoti Chatterjee",
   "license": "MIT",
+  "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
     "dev": "nodemon --exec ts-node src/server.ts",
@@ -20,15 +22,19 @@
     "worker-threads"
   ],
   "dependencies": {
+    "config": "^4.1.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",
     "express-handlebars": "^8.0.3",
     "hbs": "~4.0.4",
     "http-errors": "~1.6.3",
-    "morgan": "~1.9.1"
+    "morgan": "~1.9.1",
+    "winston": "^3.18.3",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
+    "@types/config": "^3.3.5",
     "@types/cookie-parser": "^1.4.9",
     "@types/express": "^5.0.3",
     "@types/morgan": "^1.9.10",
