@@ -17,6 +17,9 @@ importers:
       debug:
         specifier: ~2.6.9
         version: 2.6.9
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
       express:
         specifier: ~4.16.1
         version: 4.16.4
@@ -54,9 +57,6 @@ importers:
       '@types/node':
         specifier: ^24.6.2
         version: 24.6.2
-      dotenv:
-        specifier: ^17.2.3
-        version: 17.2.3
       nodemon:
         specifier: ^3.1.10
         version: 3.1.10

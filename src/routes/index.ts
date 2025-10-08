@@ -1,5 +1,5 @@
 import express, { Router, Request, Response } from 'express';
-import { WorkerPool } from '../serverUtils/workerPool';
+import { WorkerPool } from '../workerUtils/workerPool';
 import { winstonLogger } from '../utils/winston';
 import path from 'path';
 import config from 'config';
@@ -9,7 +9,7 @@ const router: Router = express.Router();
 
 // Initialize a pool of worker threads for handling intensive tasks
 const poolSize = config.get<number>('workerThreads.poolSize') || 4;
-const workerPath = path.join(__dirname, '../../dist/serverUtils/taskWorker.js');
+const workerPath = path.join(__dirname, '../../dist/workerUtils/taskWorker.js');
 
 let workerPool: WorkerPool | null = null;
 

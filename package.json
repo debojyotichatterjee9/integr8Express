@@ -7,7 +7,7 @@
   "license": "MIT",
   "main": "dist/server.js",
   "scripts": {
-    "start": "node dist/serverUtils/cluster.js",
+    "start": "node dist/cluster.js",
     "start:single": "node dist/server.js",
     "dev": "nodemon --exec ts-node src/cluster.ts",
     "dev:single": "nodemon --exec ts-node src/server.ts",
@@ -29,6 +29,7 @@
     "config": "^4.1.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
+    "dotenv": "^17.2.3",
     "express": "~4.16.1",
     "express-handlebars": "^8.0.3",
     "hbs": "~4.0.4",
@@ -43,7 +44,6 @@
     "@types/express": "^5.0.3",
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.6.2",
-    "dotenv": "^17.2.3",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
