@@ -27,6 +27,9 @@ const consoleFormat = winston.format.combine(
 
 // Create logs directory if it doesn't exist
 const logsDir = path.join(process.cwd(), 'logs');
+console.log('>> ################################################## <<');
+console.log(logsDir);
+console.log(process.env.FILE_LOGGING)
 
 // Create transports array
 const transports: winston.transport[] = [

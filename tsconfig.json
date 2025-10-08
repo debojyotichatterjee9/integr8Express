@@ -2,7 +2,7 @@
   "compilerOptions": {
     // Target the latest stable ECMAScript version for modern features
     "target": "ES2022",
-    "module": "commonjs",
+    "module": "NodeNext",
     "lib": ["ES2022"],
 
     // Enable all strict type-checking options for better code quality
@@ -17,7 +17,7 @@
 
     // Additional helpful options
     "resolveJsonModule": true,
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     "allowSyntheticDefaultImports": true,
 
     // Source maps help with debugging TypeScript in development

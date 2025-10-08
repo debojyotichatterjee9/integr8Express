@@ -1,7 +1,7 @@
-import cluster from 'cluster';
+import cluster, { Worker } from 'cluster';
 import os from 'os';
 import config from 'config';
-import { winstonLogger } from './utils/logger';
+import { winstonLogger } from '../utils/winston';
 
 /**
  * Cluster Manager for Express TypeScript Application
@@ -9,7 +9,7 @@ import { winstonLogger } from './utils/logger';
  */
 
 interface WorkerInfo {
-    worker: cluster.Worker;
+    worker: Worker;
     restarts: number;
     lastRestart: number;
 }
@@ -71,7 +71,7 @@ class ClusterManager {
     /**
      * Fork a single worker with proper tracking
      */
-    private forkWorker(): cluster.Worker | null {
+    private forkWorker(): Worker | null {
         if (this.isShuttingDown) {
             winstonLogger.info('Shutdown in progress, not forking new worker');
             return null;
@@ -100,7 +100,7 @@ class ClusterManager {
     /**
      * Handle messages from workers
      */
-    private setupWorkerMessageHandler(worker: cluster.Worker): void {
+    private setupWorkerMessageHandler(worker: Worker): void {
         const messageHandler = (message: any) => {
             const pid = worker.process.pid;
 
@@ -127,7 +127,7 @@ class ClusterManager {
     /**
      * Set up timeout for worker readiness
      */
-    private setupWorkerReadyTimeout(worker: cluster.Worker): void {
+    private setupWorkerReadyTimeout(worker: Worker): void {
         const timeout = setTimeout(() => {
             const pid = worker.process.pid;
             winstonLogger.error(`Worker ${pid} failed to become ready in time`);
@@ -164,7 +164,7 @@ class ClusterManager {
     /**
      * Handle worker exit with restart logic
      */
-    private handleWorkerExit(worker: cluster.Worker, code: number, signal: string): void {
+    private handleWorkerExit(worker: Worker, code: number, signal: string): void {
         const pid = worker.process.pid!;
         const workerInfo = this.workers.get(pid);
 
@@ -232,13 +232,23 @@ class ClusterManager {
      * Set up signal handlers for graceful shutdown
      */
     private setupSignalHandlers(): void {
-        process.on('SIGTERM', () => this.gracefulShutdown('SIGTERM'));
-        process.on('SIGINT', () => this.gracefulShutdown('SIGINT'));
+        // Handle graceful shutdown signals
+        const handleShutdown = (signal: string) => {
+            this.gracefulShutdown(signal).catch(error => {
+                winstonLogger.error(`Error during ${signal} shutdown:`, error);
+                process.exit(1);
+            });
+        };
+
+        process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+        process.on('SIGINT', () => handleShutdown('SIGINT'));
 
         // Handle uncaught exceptions
         process.on('uncaughtException', (error) => {
             winstonLogger.error('Uncaught exception in master process:', error);
-            this.gracefulShutdown('UNCAUGHT_EXCEPTION');
+            this.gracefulShutdown('UNCAUGHT_EXCEPTION')
+                .catch(err => winstonLogger.error('Error during uncaught exception shutdown:', err))
+                .finally(() => process.exit(1));
         });
 
         process.on('unhandledRejection', (reason, promise) => {
@@ -293,7 +303,7 @@ class ClusterManager {
     /**
      * Shutdown a single worker gracefully
      */
-    private shutdownWorker(worker: cluster.Worker, pid: number): Promise<void> {
+    private shutdownWorker(worker: Worker, pid: number): Promise<void> {
         return new Promise((resolve) => {
             const timeout = setTimeout(() => {
                 winstonLogger.warn(`Worker ${pid} did not respond to shutdown, disconnecting`);
@@ -338,7 +348,7 @@ async function setupWorkerProcess(): Promise<void> {
         winstonLogger.info(`Worker ${process.pid} starting`);
 
         // Start Express REST service
-        const createRestService = require('./services/rest').default;
+        const createRestService = require('../services/rest').default;
         createRestService();
 
         // Notify master that worker is ready

@@ -10,8 +10,9 @@
  * Use this with: npm run dev:single
  */
 
-import { winstonLogger } from './utils/logger';
+import { winstonLogger } from './utils/winston';
 import createRestService from './services/rest';
+import 'dotenv/config'
 
 /**
  * Start the Express server in standalone mode

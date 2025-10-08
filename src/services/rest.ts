@@ -1,6 +1,6 @@
 import http from 'http';
 import config from 'config';
-import { winstonLogger } from '../utils/logger';
+import { winstonLogger } from '../utils/winston';
 import { createApp } from '../app';
 
 /**

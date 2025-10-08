@@ -6,7 +6,7 @@
     }
   },
   "cluster": {
-    "enabled": false,
+    "enabled": true,
     "maxRestarts": 5,
     "restartWindow": 60000,
     "shutdownTimeout": 30000,
@@ -14,10 +14,13 @@
   },
   "logging": {
     "level": "info",
-    "fileLogging": false
+    "fileLogging": true
   },
   "workerThreads": {
     "poolSize": 4,
     "taskTimeout": 30000
+  },
+  "database": {
+    "mongo_uri": "mongodb://localhost:27017/your_database"
   }
 }

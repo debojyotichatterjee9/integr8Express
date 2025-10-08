@@ -7,13 +7,17 @@
   "license": "MIT",
   "main": "dist/server.js",
   "scripts": {
-    "start": "node dist/server.js",
-    "dev": "nodemon --exec ts-node src/server.ts",
+    "start": "node dist/serverUtils/cluster.js",
+    "start:single": "node dist/server.js",
+    "dev": "nodemon --exec ts-node src/cluster.ts",
+    "dev:single": "nodemon --exec ts-node src/server.ts",
     "build": "tsc",
     "watch": "tsc --watch",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
-    "prod": "npm run build && npm start"
+    "prod": "npm run build && npm start",
+    "prod:single": "npm run build && npm run start:single",
+    "test:cluster": "CLUSTERING=true npm run dev"
   },
   "keywords": [
     "express",
@@ -39,6 +43,7 @@
     "@types/express": "^5.0.3",
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.6.2",
+    "dotenv": "^17.2.3",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"

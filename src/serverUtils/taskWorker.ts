@@ -1,4 +1,4 @@
-import { parentPort } from 'worker_threads';
+import { parentPort, threadId } from 'worker_threads';
 
 /**
  * Worker Thread for CPU-Intensive Tasks
@@ -21,6 +21,18 @@ interface TaskData {
 function fibonacci(n: number): number {
   if (n <= 1) return n;
   return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+function factorial(n: number, memo: Map<number, number> = new Map()): number {
+  if (n <= 1) return 1;
+  
+  if (memo.has(n)) {
+    return memo.get(n)!;
+  }
+  
+  const result = n * factorial(n - 1, memo);
+  memo.set(n, result);
+  return result;
 }
 
 /**
@@ -46,15 +58,17 @@ function processTask(data: TaskData): any {
   
   // Perform the calculation
   const fibResult = fibonacci(number);
+  const factorialResult = factorial(number);
   const primeCheck = isPrime(number);
   
   // You can perform multiple operations here
   // All running in this separate thread
   return {
+    input: number,
+    factorial: factorialResult,
     fibonacci: fibResult,
     isPrime: primeCheck,
-    input: number,
-    threadId: 'Worker Thread'
+    threadId,
   };
 }
 
