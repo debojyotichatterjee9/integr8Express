@@ -26,6 +26,7 @@
     "worker-threads"
   ],
   "dependencies": {
+    "@faker-js/faker": "^10.0.0",
     "config": "^4.1.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
@@ -34,6 +35,8 @@
     "express-handlebars": "^8.0.3",
     "hbs": "~4.0.4",
     "http-errors": "~1.6.3",
+    "loggernaut": "^1.1.1",
+    "mongoose": "^8.19.1",
     "morgan": "~1.9.1",
     "winston": "^3.18.3",
     "winston-daily-rotate-file": "^5.0.0"

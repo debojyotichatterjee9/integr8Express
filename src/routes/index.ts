@@ -4,6 +4,7 @@ import { winstonLogger } from '../utils/winston';
 import path from 'path';
 import config from 'config';
 import os from 'os';
+import loggernaut from 'loggernaut';
 
 const router: Router = express.Router();
 
@@ -16,7 +17,8 @@ let workerPool: WorkerPool | null = null;
 // Initialize worker pool with error handling
 try {
     workerPool = new WorkerPool(workerPath, poolSize);
-    winstonLogger.info(`Worker thread pool initialized`, {
+    loggernaut.info(`Worker thread pool initialized`);
+    loggernaut.info({
         poolSize,
         pid: process.pid
     });

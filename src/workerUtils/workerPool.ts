@@ -1,5 +1,6 @@
 import { Worker } from 'worker_threads';
 import path from 'path';
+import loggernaut from 'loggernaut';
 
 /**
  * Worker Pool Manager
@@ -44,7 +45,7 @@ export class WorkerPool {
     for (let i = 0; i < this.poolSize; i++) {
       this.createWorker();
     }
-    console.log(`Worker pool initialized with ${this.poolSize} workers`);
+    loggernaut.info(`Worker pool initialized with ${this.poolSize} workers`);
   }
 
   /**

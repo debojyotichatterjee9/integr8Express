@@ -12,15 +12,24 @@
     "shutdownTimeout": 30000,
     "workerReadyTimeout": 10000
   },
-  "logging": {
-    "level": "info",
-    "fileLogging": true
-  },
   "workerThreads": {
     "poolSize": 4,
     "taskTimeout": 30000
   },
   "database": {
-    "mongo_uri": "mongodb://localhost:27017/your_database"
+    "mongodb": {
+      "uri": "mongodb://localhost:27017/integr8Express",
+      "options": {
+        "retryWrites": true,
+        "maxPoolSize": 10,
+        "minPoolSize": 2,
+        "serverSelectionTimeoutMS": 5000,
+        "socketTimeoutMS": 45000
+      }
+    }
+  },
+  "logging": {
+    "level": "info",
+    "fileLogging": true
   }
 }

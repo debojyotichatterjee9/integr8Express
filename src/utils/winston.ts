@@ -2,6 +2,7 @@ import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
 import dotenv from 'dotenv';
+import loggernaut from 'loggernaut';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -31,9 +32,6 @@ const consoleFormat = winston.format.combine(
 
 // Create logs directory if it doesn't exist
 const logsDir = path.join(process.cwd(), 'logs');
-console.log('>> ################################################## <<');
-console.log(logsDir);
-console.log(process.env.FILE_LOGGING)
 
 // Create transports array
 const transports: winston.transport[] = [
@@ -50,7 +48,7 @@ const fileLoggingEnabled =
   process.env.FILE_LOGGING === 'true';
 
 if (fileLoggingEnabled) {
-  console.info('File logging enabled');
+  loggernaut.info('File logging enabled');
   
   // Error logs - rotated daily, kept for 14 days
   transports.push(
