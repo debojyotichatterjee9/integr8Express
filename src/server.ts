@@ -12,6 +12,7 @@
 import dotenv from 'dotenv';
 import { winstonLogger } from './utils/winston';
 import createRestService from './services/rest';
+import loggernaut from 'loggernaut';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -21,11 +22,7 @@ dotenv.config();
  */
 function startServer(): void {
     try {
-        winstonLogger.info('Starting Express server in standalone mode', {
-            nodeVersion: process.version,
-            platform: process.platform,
-            env: process.env.NODE_ENV || 'development'
-        });
+        loggernaut.info('Starting Express server in standalone mode');
 
         // Create and start the REST service
         const server = createRestService();
@@ -35,10 +32,11 @@ function startServer(): void {
             process.send('ready');
         }
 
-        winstonLogger.info('Server started successfully in standalone mode');
+        loggernaut.info('Server started successfully in standalone mode');
 
     } catch (error) {
-        winstonLogger.error('Failed to start server:', error);
+        loggernaut.error('Failed to start server:');
+        loggernaut.error(error);
         process.exit(1);
     }
 }

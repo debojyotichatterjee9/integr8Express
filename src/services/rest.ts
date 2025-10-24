@@ -1,8 +1,9 @@
 import http from "http";
 import config from "config";
-import { winstonLogger } from "../utils/logger";
+import { winstonLogger } from "../utils/winston";
 import { createApp } from "../app";
 import { dbConnection } from "../database/connection";
+import loggernaut from "loggernaut";
 
 /**
  * REST Service with graceful shutdown support and MongoDB connection
@@ -17,9 +18,7 @@ export function createRestService(): http.Server {
   dbConnection
     .connect()
     .then(() => {
-      winstonLogger.info("MongoDB connection established for worker", {
-        pid: process.pid,
-      });
+      loggernaut.info(`MongoDB connection established for worker --> ${process.pid}`);
     })
     .catch((error) => {
       winstonLogger.error("Failed to connect to MongoDB:", error);
@@ -50,11 +49,7 @@ export function createRestService(): http.Server {
 
   // Start server
   server.listen(port, () => {
-    winstonLogger.info(`Worker ${process.pid} Express server listening`, {
-      host,
-      port,
-      env: process.env.NODE_ENV || "development",
-    });
+    loggernaut.info(`Worker ${process.pid} : Express server listening on port ${port}`);
   });
 
   // Handle server errors

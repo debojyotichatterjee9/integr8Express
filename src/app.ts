@@ -3,7 +3,7 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
 import { engine } from "express-handlebars";
-import { winstonLogger } from "./utils/logger";
+import { winstonLogger } from "./utils/winston";
 
 // Import our custom routes
 import indexRouter from "./routes/index";

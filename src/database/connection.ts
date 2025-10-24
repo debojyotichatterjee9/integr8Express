@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import config from 'config';
 import { winstonLogger } from '../utils/winston';
+import loggernaut from 'loggernaut';
 
 /**
  * MongoDB Connection Manager
@@ -44,18 +45,14 @@ class DatabaseConnection {
     const { uri, options } = dbConfig;
 
     try {
-      winstonLogger.info('Connecting to MongoDB...', { uri: this.sanitizeUri(uri) });
+      loggernaut.info(`Connecting to MongoDB --> ${this.sanitizeUri(uri)}`);
 
       await mongoose.connect(uri, options);
 
       this.isConnected = true;
       this.connectionAttempts = 0;
 
-      winstonLogger.info('Successfully connected to MongoDB', {
-        host: mongoose.connection.host,
-        name: mongoose.connection.name,
-        pid: process.pid
-      });
+      loggernaut.info(`Successfully connected to MongoDB --> ${mongoose.connection.name}`);
 
       // Set up event listeners
       this.setupEventListeners();

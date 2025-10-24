@@ -3,7 +3,6 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
 import dotenv from 'dotenv';
 import loggernaut from 'loggernaut';
-
 // Load environment variables from .env file
 dotenv.config();
 

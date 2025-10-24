@@ -1,6 +1,6 @@
 import express, { Router, Request, Response } from 'express';
 import { CRUDController } from '../controllers/crudController';
-import { DataSeeder } from '../services/seeder';
+import { DataSeeder } from '../utils/seeder';
 import Person from '../models/Person';
 import Airline from '../models/Airline';
 import Finance from '../models/Finance';
@@ -8,7 +8,7 @@ import Book from '../models/Book';
 import Commerce from '../models/Commerce';
 import Company from '../models/Company';
 import Location from '../models/Location';
-import { winstonLogger } from '../utils/logger';
+import { winstonLogger } from '../utils/winston';
 
 const router: Router = express.Router();
 

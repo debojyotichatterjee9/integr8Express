@@ -3,6 +3,9 @@ import os from 'os';
 import config from 'config';
 import { winstonLogger } from './utils/winston';
 import dotenv from 'dotenv';
+import loggernaut from 'loggernaut';
+import createRestService from './services/rest';
+
 
 // Load environment variables from .env file
 dotenv.config();
@@ -77,7 +80,7 @@ class ClusterManager {
      */
     private forkWorker(): Worker | null {
         if (this.isShuttingDown) {
-            winstonLogger.info('Shutdown in progress, not forking new worker');
+            loggernaut.info('Shutdown in progress, not forking new worker');
             return null;
         }
 
@@ -352,7 +355,7 @@ async function setupWorkerProcess(): Promise<void> {
         winstonLogger.info(`Worker ${process.pid} starting`);
 
         // Start Express REST service
-        const createRestService = require('../services/rest').default;
+        // const createRestService = require('./services/rest').default;
         createRestService();
 
         // Notify master that worker is ready
