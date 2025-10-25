@@ -45,14 +45,14 @@ class DatabaseConnection {
     const { uri, options } = dbConfig;
 
     try {
-      loggernaut.info(`Connecting to MongoDB --> ${this.sanitizeUri(uri)}`);
+      loggernaut.log(`Connecting to MongoDB --> ${this.sanitizeUri(uri)}`);
 
       await mongoose.connect(uri, options);
 
       this.isConnected = true;
       this.connectionAttempts = 0;
 
-      loggernaut.info(`Successfully connected to MongoDB --> ${mongoose.connection.name}`);
+      loggernaut.log(`Successfully connected to MongoDB --> ${mongoose.connection.name}`);
 
       // Set up event listeners
       this.setupEventListeners();

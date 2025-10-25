@@ -7,6 +7,7 @@ import Book from '../models/Book';
 import Commerce from '../models/Commerce';
 import Company from '../models/Company';
 import Location from '../models/Location';
+import loggernaut from 'loggernaut';
 
 /**
  * Data Seeder Service
@@ -63,7 +64,7 @@ export class DataSeeder {
    */
   private static generateFinance() {
     const currency = faker.finance.currency();
-
+    loggernaut.info(currency.symbol)
     return {
       accountName: faker.finance.accountName(),
       accountNumber: faker.finance.accountNumber(),
@@ -83,7 +84,7 @@ export class DataSeeder {
         code: currency.code,
         name: currency.name,
         numericCode: faker.string.numeric(3),
-        symbol: currency.symbol
+        symbol: currency.symbol ?? "N/A"
       },
       iban: faker.finance.iban(),
       pin: faker.finance.pin(),
@@ -221,10 +222,10 @@ export class DataSeeder {
       winstonLogger.info(`Seeding ${count} finance records...`);
       const finances = Array.from({ length: count }, () => this.generateFinance());
       const result = await Finance.insertMany(finances);
-      winstonLogger.info(`Successfully seeded ${result.length} finance records`);
+      loggernaut.info(`Successfully seeded ${result.length} finance records`);
       return result.length;
     } catch (error: any) {
-      winstonLogger.error('Error seeding finances:', error);
+      loggernaut.error(error);
       throw error;
     }
   }
@@ -345,7 +346,8 @@ export class DataSeeder {
         total
       };
     } catch (error: any) {
-      winstonLogger.error('Error seeding all collections:', error);
+      loggernaut.error('Error seeding all collections:');
+      loggernaut.error(error);
       throw error;
     }
   }
@@ -355,8 +357,6 @@ export class DataSeeder {
    */
   public static async clearAll(): Promise<void> {
     try {
-      winstonLogger.info('Clearing all collections...');
-
       await Promise.all([
         Person.deleteMany({}),
         Airline.deleteMany({}),
@@ -367,9 +367,10 @@ export class DataSeeder {
         Location.deleteMany({})
       ]);
 
-      winstonLogger.info('Successfully cleared all collections');
+      loggernaut.info('Successfully cleared all collections');
     } catch (error: any) {
-      winstonLogger.error('Error clearing collections:', error);
+      winstonLogger.error('Error clearing collections:');
+      winstonLogger.error(error);
       throw error;
     }
   }

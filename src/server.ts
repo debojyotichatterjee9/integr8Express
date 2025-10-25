@@ -22,7 +22,7 @@ dotenv.config();
  */
 function startServer(): void {
     try {
-        loggernaut.info('Starting Express server in standalone mode');
+        loggernaut.log('Starting Express server in standalone mode');
 
         // Create and start the REST service
         const server = createRestService();
@@ -32,7 +32,7 @@ function startServer(): void {
             process.send('ready');
         }
 
-        loggernaut.info('Server started successfully in standalone mode');
+        loggernaut.log('Server started successfully in standalone mode');
 
     } catch (error) {
         loggernaut.error('Failed to start server:');

@@ -9,6 +9,7 @@ import Commerce from '../models/Commerce';
 import Company from '../models/Company';
 import Location from '../models/Location';
 import { winstonLogger } from '../utils/winston';
+import loggernaut from 'loggernaut';
 
 const router: Router = express.Router();
 
@@ -115,7 +116,8 @@ router.post('/seed/all', async (req: Request, res: Response) => {
       data: result
     });
   } catch (error: any) {
-    winstonLogger.error('Error seeding all collections:', error);
+    loggernaut.error('Error seeding collections');
+    loggernaut.error(error);
     res.status(500).json({
       success: false,
       message: 'Error seeding collections',
@@ -187,7 +189,7 @@ router.post('/seed/:collection', async (req: Request, res: Response) => {
  */
 router.delete('/seed/all', async (req: Request, res: Response) => {
   try {
-    winstonLogger.info('Clearing all collections');
+    loggernaut.info('Initiating process to clear all data.');
     
     await DataSeeder.clearAll();
     

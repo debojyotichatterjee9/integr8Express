@@ -1,0 +1,17 @@
+<div style="text-align: center; padding: 40px;">
+  <h1 style="font-size: 4em; color: #667eea; margin-bottom: 20px;">{{error.status}}</h1>
+  <h2 style="color: #555; margin-bottom: 20px;">{{message}}</h2>
+  
+  {{#if error.stack}}
+    <div style="text-align: left; background: #f5f5f5; padding: 20px; border-radius: 8px; margin-top: 30px; overflow-x: auto;">
+      <h3 style="color: #667eea; margin-bottom: 10px;">Stack Trace (Development Mode)</h3>
+      <pre style="font-size: 12px; color: #666;">{{error.stack}}</pre>
+    </div>
+  {{/if}}
+  
+  <div style="margin-top: 30px;">
+    <a href="/" style="display: inline-block; background: #667eea; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none;">
+      ← Back to Home
+    </a>
+  </div>
+</div>

@@ -31,6 +31,7 @@ try {
  * This demonstrates a simple view rendering with Handlebars
  */
 router.get('/', (req: Request, res: Response) => {
+    loggernaut.info("REACHING HERE")
     res.render('index', {
         title: 'Express TypeScript App',
         message: 'Welcome to your production-ready Express application!',

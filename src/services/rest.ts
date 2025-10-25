@@ -18,7 +18,7 @@ export function createRestService(): http.Server {
   dbConnection
     .connect()
     .then(() => {
-      loggernaut.info(`MongoDB connection established for worker --> ${process.pid}`);
+      loggernaut.log(`MongoDB connection established for worker --> ${process.pid}`);
     })
     .catch((error) => {
       winstonLogger.error("Failed to connect to MongoDB:", error);
@@ -49,7 +49,7 @@ export function createRestService(): http.Server {
 
   // Start server
   server.listen(port, () => {
-    loggernaut.info(`Worker ${process.pid} : Express server listening on port ${port}`);
+    loggernaut.log(`Worker ${process.pid} : Express server listening on port ${port}`);
   });
 
   // Handle server errors
