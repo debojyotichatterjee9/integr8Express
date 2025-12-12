@@ -50,7 +50,8 @@ function startServer(): void {
 // Handle uncaught exceptions (errors thrown outside try/catch)
 process.on('uncaughtException', (error) => {
     // Log the exception through Winston
-    winstonLogger.error('Uncaught exception:', error);
+    loggernaut.error('Uncaught exception:');
+    loggernaut.error(error);
 
     // Exit process to avoid undefined state
     process.exit(1);
@@ -59,7 +60,8 @@ process.on('uncaughtException', (error) => {
 // Handle promises that reject without a catch handler
 process.on('unhandledRejection', (reason, promise) => {
     // Log information about the unhandled rejection
-    winstonLogger.error('Unhandled rejection:', { reason, promise });
+    loggernaut.error('Unhandeled Rejection:');
+    winstonLogger.error({ reason, promise });
 
     // Exit process to ensure stability
     process.exit(1);

@@ -3,8 +3,8 @@ import os from 'os';                             // Provides CPU/memory info
 import config from 'config';                     // Loads configuration settings
 import { winstonLogger } from './utils/winston'; // Winston logger for structured logging
 import dotenv from 'dotenv';                     // Loads environment variables
-import loggernaut from 'loggernaut';             // Additional logger
 import createRestService from './services/rest'; // Function that starts the Express REST API
+import loggernaut from 'loggernaut';              // Logger utility
 
 // Load environment variables from .env file
 dotenv.config();
@@ -53,11 +53,12 @@ class ClusterManager {
         const validatedCores = Math.max(1, Math.min(numCores, maxWorkers));
 
         if (validatedCores !== numCores) {
-            winstonLogger.warn(`Adjusted worker count from ${numCores} to ${validatedCores}`);
+            loggernaut.warn(`Adjusted worker count from ${numCores} to ${validatedCores}`);
         }
 
         // Log system information
-        winstonLogger.info(`Master cluster setting up ${validatedCores} workers`, {
+        loggernaut.info(`Master cluster setting up ${validatedCores} workers`);
+        loggernaut.info({
             cpuCores: os.cpus().length,
             totalMemory: `${Math.round(os.totalmem() / 1024 / 1024 / 1024)}GB`
         });
@@ -95,7 +96,7 @@ class ClusterManager {
             lastRestart: Date.now()
         });
 
-        winstonLogger.debug(`Forked worker ${pid}`);
+        loggernaut.debug(`Forked worker ${pid}`);
 
         this.setupWorkerMessageHandler(worker);    // Handle worker messages
         this.setupWorkerReadyTimeout(worker);      // Ensure worker becomes ready quickly
@@ -111,14 +112,16 @@ class ClusterManager {
             const pid = worker.process.pid;
 
             if (message?.type === 'ready') {
-                winstonLogger.info(`Worker ${pid} is ready`);
+                loggernaut.info(`Worker ${pid} is ready`);
             } else if (message?.type === 'shutdown-complete') {
-                winstonLogger.info(`Worker ${pid} shutdown complete`);
+                loggernaut.info(`Worker ${pid} shutdown complete`);
                 worker.disconnect(); // Master closes IPC channel
             } else if (message?.type === 'health') {
-                winstonLogger.debug(`Worker ${pid} health check:`, message.data);
+                loggernaut.debug(`Worker ${pid} health check:`);
+                loggernaut.log(message.data)
             } else {
-                winstonLogger.debug(`Worker ${pid} message:`, message);
+                loggernaut.debug(`Worker ${pid} message:`);
+                loggernaut.log(message);
             }
         };
 
@@ -136,7 +139,7 @@ class ClusterManager {
     private setupWorkerReadyTimeout(worker: Worker): void {
         const timeout = setTimeout(() => {
             const pid = worker.process.pid;
-            winstonLogger.error(`Worker ${pid} failed to become ready in time`);
+            loggernaut.error(`Worker ${pid} failed to become ready in time`);
             worker.kill('SIGTERM'); // Force terminate
         }, this.WORKER_READY_TIMEOUT);
 
@@ -155,11 +158,11 @@ class ClusterManager {
      */
     private setupClusterEventHandlers(host: string, port: number): void {
         cluster.on('online', (worker) => {
-            winstonLogger.info(`Worker ${worker.process.pid} online on http://${host}:${port}`);
+            loggernaut.info(`Worker ${worker.process.pid} online on http://${host}:${port}`);
         });
 
         cluster.on('disconnect', (worker) => {
-            winstonLogger.info(`Worker ${worker.process.pid} disconnected`);
+            loggernaut.info(`Worker ${worker.process.pid} disconnected`);
         });
 
         cluster.on('exit', (worker, code, signal) => {
@@ -174,7 +177,8 @@ class ClusterManager {
         const pid = worker.process.pid!;
         const workerInfo = this.workers.get(pid);
 
-        winstonLogger.warn(`Worker ${pid} died`, {
+        loggernaut.warn(`Worker ${pid} died`);
+        loggernaut.log({
             code,
             signal,
             exitedAfterDisconnect: worker.exitedAfterDisconnect
@@ -189,13 +193,13 @@ class ClusterManager {
 
         // If exit code is 0, it shut down cleanly
         if (code === 0) {
-            winstonLogger.info(`Worker ${pid} exited cleanly, not restarting`);
+            loggernaut.info(`Worker ${pid} exited cleanly, not restarting`);
             return;
         }
 
         // Decide if we should restart based on restart counters
         if (workerInfo && this.shouldRestartWorker(workerInfo)) {
-            winstonLogger.info(`Restarting worker to replace ${pid}`);
+            loggernaut.info(`Restarting worker to replace ${pid}`);
             const newWorker = this.forkWorker();
 
             // Update restart counters for the new worker
@@ -211,7 +215,8 @@ class ClusterManager {
                 }
             }
         } else {
-            winstonLogger.error(`Worker ${pid} exceeded restart limit`, {
+            loggernaut.error(`Worker ${pid} exceeded restart limit`);
+            loggernaut.error({
                 maxRestarts: this.MAX_RESTARTS,
                 window: `${this.RESTART_WINDOW}ms`
             });
@@ -239,7 +244,8 @@ class ClusterManager {
     private setupSignalHandlers(): void {
         const handleShutdown = (signal: string) => {
             this.gracefulShutdown(signal).catch(error => {
-                winstonLogger.error(`Error during ${signal} shutdown:`, error);
+                loggernaut.error(`Error during ${signal} shutdown:`);
+                loggernaut.error(error);
                 process.exit(1);
             });
         };
@@ -249,14 +255,16 @@ class ClusterManager {
 
         // Fatal error handlers
         process.on('uncaughtException', (error) => {
-            winstonLogger.error('Uncaught exception in master process:', error);
+            loggernaut.error('Uncaught exception in master process:');
+            loggernaut.error(error);
             this.gracefulShutdown('UNCAUGHT_EXCEPTION')
-                .catch(err => winstonLogger.error('Error during uncaught exception shutdown:', err))
+                .catch(err => loggernaut.error(`Error during uncaught exception shutdown: ${err}`))
                 .finally(() => process.exit(1));
         });
 
         process.on('unhandledRejection', (reason, promise) => {
-            winstonLogger.error('Unhandled rejection in master process:', { reason, promise });
+            loggernaut.error('Unhandled rejection in master process:');
+            loggernaut.error({ reason, promise });
         });
     }
 
@@ -265,12 +273,12 @@ class ClusterManager {
      */
     private async gracefulShutdown(signal: string): Promise<void> {
         if (this.isShuttingDown) {
-            winstonLogger.warn('Shutdown already in progress');
+            loggernaut.warn('Shutdown already in progress');
             return;
         }
 
         this.isShuttingDown = true;
-        winstonLogger.info(`Received ${signal}, initiating graceful shutdown`);
+        loggernaut.info(`Received ${signal}, initiating graceful shutdown`);
 
         const shutdownPromises: Promise<void>[] = [];
 
@@ -286,20 +294,21 @@ class ClusterManager {
                 this.createTimeout(this.SHUTDOWN_TIMEOUT, 'Worker shutdown timeout')
             ]);
 
-            winstonLogger.info('All workers shut down gracefully');
+            loggernaut.info('All workers shut down gracefully');
         } catch (error) {
-            winstonLogger.error('Error during graceful shutdown:', error);
+            loggernaut.error('Error during graceful shutdown:');
+            loggernaut.error(error);
         }
 
         // Force kill workers that are still alive
         for (const [pid, workerInfo] of this.workers.entries()) {
             if (workerInfo.worker.isConnected()) {
-                winstonLogger.warn(`Force killing worker ${pid}`);
+                loggernaut.warn(`Force killing worker ${pid}`);
                 workerInfo.worker.kill('SIGKILL');
             }
         }
 
-        winstonLogger.info('Server shutdown complete');
+        loggernaut.info('Server shutdown complete');
         process.exit(0);
     }
 
@@ -310,7 +319,7 @@ class ClusterManager {
         return new Promise((resolve) => {
             const timeout = setTimeout(() => {
                 // Worker didn’t respond in time → force disconnect
-                winstonLogger.warn(`Worker ${pid} did not respond to shutdown, disconnecting`);
+                loggernaut.warn(`Worker ${pid} did not respond to shutdown, disconnecting`);
                 worker.disconnect();
                 resolve();
             }, 10000);
@@ -326,7 +335,8 @@ class ClusterManager {
             try {
                 worker.send({ type: 'shutdown' });
             } catch (error) {
-                winstonLogger.error(`Error sending shutdown to worker ${pid}:`, error);
+                loggernaut.error(`Error sending shutdown to worker ${pid}:`);
+                loggernaut.error(error);
                 clearTimeout(timeout);
                 worker.disconnect();
                 resolve();
@@ -349,7 +359,7 @@ class ClusterManager {
  */
 async function setupWorkerProcess(): Promise<void> {
     try {
-        winstonLogger.info(`Worker ${process.pid} starting`);
+        loggernaut.info(`Worker ${process.pid} starting`);
 
         // Start Express REST service
         createRestService();
@@ -362,7 +372,7 @@ async function setupWorkerProcess(): Promise<void> {
         setupHealthCheck(); // Start periodic reporting
 
     } catch (err: any) {
-        winstonLogger.error(`Worker ${process.pid} failed to start:`, err);
+        loggernaut.error(`Worker ${process.pid} failed to start: ${err}`);
         process.exit(1);
     }
 }
@@ -396,7 +406,7 @@ function setupServer(isClusterRequired: boolean): void {
     } else {
         // Run as single worker process
         setupWorkerProcess().catch((error) => {
-            winstonLogger.error('Failed to start worker process:', error);
+            loggernaut.error(`Failed to start worker process: ${error}`);
             process.exit(1);
         });
     }
