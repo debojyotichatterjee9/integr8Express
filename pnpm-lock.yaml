@@ -36,8 +36,8 @@ importers:
         specifier: ~1.6.3
         version: 1.6.3
       loggernaut:
-        specifier: ^1.1.1
-        version: 1.1.1
+        specifier: ^1.2.1
+        version: 1.2.1
       mongoose:
         specifier: ^8.19.1
         version: 8.19.1
@@ -523,8 +523,8 @@ packages:
     resolution: {integrity: sha512-TFYA4jnP7PVbmlBIfhlSe+WKxs9dklXMTEGcBCIvLhE/Tn3H6Gk1norupVW7m5Cnd4bLcr08AytbyV/xj7f/kQ==}
     engines: {node: '>= 12.0.0'}
 
-  loggernaut@1.1.1:
-    resolution: {integrity: sha512-U+QVkBxduIzRdNWPhbsPDzRgFim7pj45Of6Hs3oIJhUZ5kRGgxBB1RkbDLgaqirPSTokBjqyU106LHX5a1dGYA==}
+  loggernaut@1.2.1:
+    resolution: {integrity: sha512-nLeEDqzzi9E9Ki8pKRc+GuZ7OQ8YevBMvhgmzaN21YpQCd6roXZ5Abk58hucxlDVA72h3sUQOVg6WKu4uPIlDA==}
 
   lru-cache@11.2.2:
     resolution: {integrity: sha512-F9ODfyqML2coTIsQpSkRHnLSZMtkU8Q+mSfcaIyKwy58u+8k5nvAYeiNhsyMARvzNcXJ9QfWVrcPsC9e9rAxtg==}
@@ -1387,7 +1387,7 @@ snapshots:
       safe-stable-stringify: 2.5.0
       triple-beam: 1.4.1
 
-  loggernaut@1.1.1: {}
+  loggernaut@1.2.1: {}
 
   lru-cache@11.2.2: {}
 
