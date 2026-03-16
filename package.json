@@ -35,7 +35,7 @@
     "express-handlebars": "^8.0.3",
     "hbs": "~4.0.4",
     "http-errors": "~1.6.3",
-    "loggernaut": "^1.1.1",
+    "loggernaut": "^1.2.1",
     "mongoose": "^8.19.1",
     "morgan": "~1.9.1",
     "winston": "^3.18.3",

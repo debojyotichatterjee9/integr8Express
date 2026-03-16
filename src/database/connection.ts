@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import config from 'config';
-import { winstonLogger } from '../utils/winston';
+// import { winstonLogger } from '../utils/winston';
 import loggernaut from 'loggernaut';
 
 /**
@@ -37,7 +37,7 @@ class DatabaseConnection {
    */
   public async connect(): Promise<void> {
     if (this.isConnected) {
-      winstonLogger.info('Already connected to MongoDB');
+      loggernaut.info('Already connected to MongoDB');
       return;
     }
 
@@ -59,19 +59,20 @@ class DatabaseConnection {
 
     } catch (error: any) {
       this.connectionAttempts++;
-      winstonLogger.error('MongoDB connection error:', {
+      loggernaut.error('MongoDB connection error:');
+      loggernaut.error({
         error: error.message,
         attempt: this.connectionAttempts,
         maxAttempts: this.MAX_RETRY_ATTEMPTS
       });
-
+      
       // Retry logic
       if (this.connectionAttempts < this.MAX_RETRY_ATTEMPTS) {
-        winstonLogger.info(`Retrying connection in ${this.RETRY_DELAY / 1000} seconds...`);
+        loggernaut.info(`Retrying connection in ${this.RETRY_DELAY / 1000} seconds...`);
         await this.delay(this.RETRY_DELAY);
         return this.connect();
       } else {
-        winstonLogger.error('Max connection attempts reached. Exiting...');
+        loggernaut.error('Max connection attempts reached. Exiting...');
         throw new Error('Failed to connect to MongoDB after multiple attempts');
       }
     }
@@ -82,17 +83,18 @@ class DatabaseConnection {
    */
   public async disconnect(): Promise<void> {
     if (!this.isConnected) {
-      winstonLogger.info('Not connected to MongoDB');
+      loggernaut.info('Not connected to MongoDB');
       return;
     }
 
     try {
-      winstonLogger.info('Disconnecting from MongoDB...');
+      loggernaut.info('Disconnecting from MongoDB...');
       await mongoose.connection.close(false);
       this.isConnected = false;
-      winstonLogger.info('Successfully disconnected from MongoDB');
+      loggernaut.info('Successfully disconnected from MongoDB');
     } catch (error: any) {
-      winstonLogger.error('Error disconnecting from MongoDB:', error);
+      loggernaut.error('Error disconnecting from MongoDB:');
+      loggernaut.error(error);
       throw error;
     }
   }
@@ -120,30 +122,31 @@ class DatabaseConnection {
   private setupEventListeners(): void {
     // Connected event
     mongoose.connection.on('connected', () => {
-      winstonLogger.info('MongoDB connection established');
+      loggernaut.info('MongoDB connection established');
     });
 
     // Error event
     mongoose.connection.on('error', (error) => {
-      winstonLogger.error('MongoDB connection error:', error);
+      loggernaut.error('MongoDB connection error:')
+      loggernaut.error(error);
       this.isConnected = false;
     });
 
     // Disconnected event
     mongoose.connection.on('disconnected', () => {
-      winstonLogger.warn('MongoDB disconnected');
+      loggernaut.warn('MongoDB disconnected');
       this.isConnected = false;
     });
 
     // Reconnected event
     mongoose.connection.on('reconnected', () => {
-      winstonLogger.info('MongoDB reconnected');
+      loggernaut.info('MongoDB reconnected');
       this.isConnected = true;
     });
 
     // Reconnect failed event
     mongoose.connection.on('reconnectFailed', () => {
-      winstonLogger.error('MongoDB reconnection failed');
+      loggernaut.error('MongoDB reconnection failed');
       this.isConnected = false;
     });
 
@@ -192,7 +195,8 @@ class DatabaseConnection {
       await mongoose.connection.db.admin().ping();
       return true;
     } catch (error) {
-      winstonLogger.error('Database health check failed:', error);
+      loggernaut.error('Database health check failed:')
+      loggernaut.error(error);
       return false;
     }
   }

@@ -21,7 +21,8 @@ export function createRestService(): http.Server {
       loggernaut.log(`MongoDB connection established for worker --> ${process.pid}`);
     })
     .catch((error) => {
-      winstonLogger.error("Failed to connect to MongoDB:", error);
+      loggernaut.error('Failed to connect MongoDB')
+      loggernaut.error(error);
       process.exit(1);
     });
 
@@ -62,11 +63,11 @@ export function createRestService(): http.Server {
 
     switch (error.code) {
       case "EACCES":
-        winstonLogger.error(`${bind} requires elevated privileges`);
+        loggernaut.error(`${bind} requires elevated privileges`);
         process.exit(1);
         break;
       case "EADDRINUSE":
-        winstonLogger.error(`${bind} is already in use`);
+        loggernaut.error(`${bind} is already in use`);
         process.exit(1);
         break;
       default:
@@ -80,23 +81,23 @@ export function createRestService(): http.Server {
    */
   const shutdown = async (): Promise<void> => {
     if (isShuttingDown) {
-      winstonLogger.warn(`Worker ${process.pid} shutdown already in progress`);
+      loggernaut.warn(`Worker ${process.pid} shutdown already in progress`);
       return;
     }
 
     isShuttingDown = true;
-    winstonLogger.info(`Worker ${process.pid} starting shutdown sequence`);
+    loggernaut.info(`Worker ${process.pid} starting shutdown sequence`);
 
     // Stop accepting new connections
     server.close(() => {
-      winstonLogger.info(`Worker ${process.pid} HTTP server closed`);
+      loggernaut.info(`Worker ${process.pid} HTTP server closed`);
     });
 
     // Give existing connections time to finish (10 seconds)
     const shutdownTimeout = setTimeout(() => {
-      winstonLogger.warn(`Worker ${process.pid} forcing connection closure`, {
+      loggernaut.warn(`Worker ${process.pid} forcing connection closure. ${{
         activeConnections: connections.size,
-      });
+      }}`);
 
       connections.forEach((connection) => {
         connection.destroy();
@@ -108,19 +109,17 @@ export function createRestService(): http.Server {
       if (connections.size === 0) {
         clearInterval(checkConnections);
         clearTimeout(shutdownTimeout);
-        winstonLogger.info(`Worker ${process.pid} all HTTP connections closed`);
+        loggernaut.info(`Worker ${process.pid} all HTTP connections closed`);
       }
     }, 100);
 
     // Disconnect from MongoDB
     try {
       await dbConnection.disconnect();
-      winstonLogger.info(`Worker ${process.pid} MongoDB disconnected`);
+      loggernaut.info(`Worker ${process.pid} MongoDB disconnected`);
     } catch (error) {
-      winstonLogger.error(
-        `Worker ${process.pid} error disconnecting MongoDB:`,
-        error
-      );
+      loggernaut.error(`Worker ${process.pid} error disconnecting MongoDB:`);
+      loggernaut.error(error);
     }
   };
 
@@ -135,21 +134,22 @@ export function createRestService(): http.Server {
           }
         })
         .catch((error) => {
-          winstonLogger.error(`Worker ${process.pid} shutdown error:`, error);
+          loggernaut.error(`Worker ${process.pid} shutdown error:`);
+          loggernaut.error(error);
         });
     }
   });
 
   // Handle direct signals to worker (when not using cluster)
   process.on("SIGTERM", () => {
-    winstonLogger.info(`Worker ${process.pid} received SIGTERM`);
+    loggernaut.info(`Worker ${process.pid} received SIGTERM`);
     shutdown().then(() => {
       setTimeout(() => process.exit(0), 1000);
     });
   });
 
   process.on("SIGINT", () => {
-    winstonLogger.info(`Worker ${process.pid} received SIGINT`);
+    loggernaut.info(`Worker ${process.pid} received SIGINT`);
     shutdown().then(() => {
       setTimeout(() => process.exit(0), 1000);
     });

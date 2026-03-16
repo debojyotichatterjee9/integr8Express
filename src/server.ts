@@ -9,12 +9,12 @@
  *
  * Use this with: npm run dev:single
  */
-import dotenv from 'dotenv';
-import { winstonLogger } from './utils/winston';
-import createRestService from './services/rest';
-import loggernaut from 'loggernaut';
+import dotenv from 'dotenv';                  // Import dotenv to load environment variables
+import { winstonLogger } from './utils/winston';  // Custom Winston logger instance
+import createRestService from './services/rest';  // Function that sets up and returns an Express server
+import loggernaut from 'loggernaut';              // Logger utility
 
-// Load environment variables from .env file
+// Load environment variables from .env file into process.env
 dotenv.config();
 
 /**
@@ -22,36 +22,50 @@ dotenv.config();
  */
 function startServer(): void {
     try {
+        // Log that the server boot sequence has started
         loggernaut.log('Starting Express server in standalone mode');
 
-        // Create and start the REST service
+        // Initialize and start the REST/Express service
+        // (createRestService returns the running server instance)
         const server = createRestService();
 
-        // Notify that server is ready (for process managers)
+        // If running under a process manager (like PM2), notify that the app is ready
         if (process.send) {
             process.send('ready');
         }
 
+        // Log that the server has successfully started
         loggernaut.log('Server started successfully in standalone mode');
 
     } catch (error) {
+        // Log startup failure details
         loggernaut.error('Failed to start server:');
         loggernaut.error(error);
+
+        // Exit with error code 1 to signal failure
         process.exit(1);
     }
 }
 
-// Handle uncaught exceptions
+// Handle uncaught exceptions (errors thrown outside try/catch)
 process.on('uncaughtException', (error) => {
-    winstonLogger.error('Uncaught exception:', error);
+    // Log the exception through Winston
+    loggernaut.error('Uncaught exception:');
+    loggernaut.error(error);
+
+    // Exit process to avoid undefined state
     process.exit(1);
 });
 
-// Handle unhandled promise rejections
+// Handle promises that reject without a catch handler
 process.on('unhandledRejection', (reason, promise) => {
-    winstonLogger.error('Unhandled rejection:', { reason, promise });
+    // Log information about the unhandled rejection
+    loggernaut.error('Unhandeled Rejection:');
+    winstonLogger.error({ reason, promise });
+
+    // Exit process to ensure stability
     process.exit(1);
 });
 
-// Start the server
+// Start the standalone server
 startServer();
