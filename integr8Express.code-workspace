@@ -5,6 +5,9 @@
 		}
 	],
 	"settings": {
-		"docwriter.hotkey.mac": "⌥ + ."
+		"docwriter.hotkey.mac": "⌥ + .",
+		"conventionalCommits.scopes": [
+			"DEV-1"
+		]
 	}
 }
