@@ -7,8 +7,8 @@
   "license": "MIT",
   "main": "dist/server.js",
   "scripts": {
-    "start": "node dist/cluster.js",
-    "start:single": "node dist/server.js",
+    "start": "tsc && node dist/cluster.js",
+    "start:single": "tsc && node dist/server.js",
     "dev": "nodemon --exec ts-node src/cluster.ts",
     "dev:single": "nodemon --exec ts-node src/server.ts",
     "build": "tsc",
@@ -26,17 +26,17 @@
     "worker-threads"
   ],
   "dependencies": {
-    "@faker-js/faker": "^10.0.0",
+    "@faker-js/faker": "^10.4.0",
     "config": "^4.1.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^17.2.3",
-    "express": "~4.16.1",
+    "express": "~5.2.1",
     "express-handlebars": "^8.0.3",
-    "hbs": "~4.0.4",
+    "hbs": "~4.2.1",
     "http-errors": "~1.6.3",
     "loggernaut": "^1.2.1",
-    "mongoose": "^8.19.1",
+    "mongoose": "^9.6.1",
     "morgan": "~1.9.1",
     "winston": "^3.18.3",
     "winston-daily-rotate-file": "^5.0.0"
@@ -46,7 +46,7 @@
     "@types/cookie-parser": "^1.4.9",
     "@types/express": "^5.0.3",
     "@types/morgan": "^1.9.10",
-    "@types/node": "^24.6.2",
+    "@types/node": "^25.6.1",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"

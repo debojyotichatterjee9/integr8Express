@@ -55,21 +55,21 @@ export class WorkerPool {
     const worker = new Worker(this.workerPath);
     
     // When a worker completes its task, make it available again
-    worker.on('message', (result) => {
+    worker.on('message', (result: any) => {
       this.handleWorkerResult(worker, result);
     });
 
     // Handle worker errors gracefully
-    worker.on('error', (error) => {
-      console.error('Worker error:', error);
+    worker.on('error', (error: Error) => {
+      loggernaut.error(`Worker error: ${error}`);
       // Remove the failed worker and create a replacement
       this.handleWorkerError(worker, error);
     });
 
     // Handle unexpected worker exits
-    worker.on('exit', (code) => {
+    worker.on('exit', (code: number) => {
       if (code !== 0) {
-        console.error(`Worker stopped with exit code ${code}`);
+        loggernaut.error(`Worker stopped with exit code ${code}`);
         this.handleWorkerExit(worker);
       }
     });

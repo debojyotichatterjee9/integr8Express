@@ -1,7 +1,7 @@
-import mongoose from 'mongoose';
-import config from 'config';
+import mongoose from "mongoose";
+import config from "config";
 // import { winstonLogger } from '../utils/winston';
-import loggernaut from 'loggernaut';
+import loggernaut from "loggernaut";
 
 /**
  * MongoDB Connection Manager
@@ -20,7 +20,7 @@ class DatabaseConnection {
   private readonly MAX_RETRY_ATTEMPTS = 5;
   private readonly RETRY_DELAY = 5000; // 5 seconds
 
-  private constructor() {}
+  private constructor() { }
 
   /**
    * Get singleton instance
@@ -37,43 +37,49 @@ class DatabaseConnection {
    */
   public async connect(): Promise<void> {
     if (this.isConnected) {
-      loggernaut.info('Already connected to MongoDB');
+      loggernaut.info("Already connected to MongoDB");
       return;
     }
 
-    const dbConfig = config.get<DatabaseConfig>('database.mongodb');
+    const dbConfig = config.get<DatabaseConfig>("database.mongodb");
     const { uri, options } = dbConfig;
 
     try {
       loggernaut.log(`Connecting to MongoDB --> ${this.sanitizeUri(uri)}`);
 
-      await mongoose.connect(uri, options);
+      // Create a completely clean, plain JS object
+      const cleanOptions = JSON.parse(JSON.stringify(options));
+
+      await mongoose.connect(uri, cleanOptions);
 
       this.isConnected = true;
       this.connectionAttempts = 0;
 
-      loggernaut.log(`Successfully connected to MongoDB --> ${mongoose.connection.name}`);
+      loggernaut.log(
+        `Successfully connected to MongoDB --> ${mongoose.connection.name}`,
+      );
 
       // Set up event listeners
       this.setupEventListeners();
-
     } catch (error: any) {
       this.connectionAttempts++;
-      loggernaut.error('MongoDB connection error:');
+      loggernaut.error("MongoDB connection error:");
       loggernaut.error({
         error: error.message,
         attempt: this.connectionAttempts,
-        maxAttempts: this.MAX_RETRY_ATTEMPTS
+        maxAttempts: this.MAX_RETRY_ATTEMPTS,
       });
-      
+
       // Retry logic
       if (this.connectionAttempts < this.MAX_RETRY_ATTEMPTS) {
-        loggernaut.info(`Retrying connection in ${this.RETRY_DELAY / 1000} seconds...`);
+        loggernaut.info(
+          `Retrying connection in ${this.RETRY_DELAY / 1000} seconds...`,
+        );
         await this.delay(this.RETRY_DELAY);
         return this.connect();
       } else {
-        loggernaut.error('Max connection attempts reached. Exiting...');
-        throw new Error('Failed to connect to MongoDB after multiple attempts');
+        loggernaut.error("Max connection attempts reached. Exiting...");
+        throw new Error("Failed to connect to MongoDB after multiple attempts");
       }
     }
   }
@@ -83,17 +89,17 @@ class DatabaseConnection {
    */
   public async disconnect(): Promise<void> {
     if (!this.isConnected) {
-      loggernaut.info('Not connected to MongoDB');
+      loggernaut.info("Not connected to MongoDB");
       return;
     }
 
     try {
-      loggernaut.info('Disconnecting from MongoDB...');
+      loggernaut.info("Disconnecting from MongoDB...");
       await mongoose.connection.close(false);
       this.isConnected = false;
-      loggernaut.info('Successfully disconnected from MongoDB');
+      loggernaut.info("Successfully disconnected from MongoDB");
     } catch (error: any) {
-      loggernaut.error('Error disconnecting from MongoDB:');
+      loggernaut.error("Error disconnecting from MongoDB:");
       loggernaut.error(error);
       throw error;
     }
@@ -112,7 +118,7 @@ class DatabaseConnection {
       isConnected: this.isConnected,
       readyState: mongoose.connection.readyState,
       host: mongoose.connection.host,
-      name: mongoose.connection.name
+      name: mongoose.connection.name,
     };
   }
 
@@ -121,41 +127,41 @@ class DatabaseConnection {
    */
   private setupEventListeners(): void {
     // Connected event
-    mongoose.connection.on('connected', () => {
-      loggernaut.info('MongoDB connection established');
+    mongoose.connection.on("connected", () => {
+      loggernaut.info("MongoDB connection established");
     });
 
     // Error event
-    mongoose.connection.on('error', (error) => {
-      loggernaut.error('MongoDB connection error:')
+    mongoose.connection.on("error", (error) => {
+      loggernaut.error("MongoDB connection error:");
       loggernaut.error(error);
       this.isConnected = false;
     });
 
     // Disconnected event
-    mongoose.connection.on('disconnected', () => {
-      loggernaut.warn('MongoDB disconnected');
+    mongoose.connection.on("disconnected", () => {
+      loggernaut.warn("MongoDB disconnected");
       this.isConnected = false;
     });
 
     // Reconnected event
-    mongoose.connection.on('reconnected', () => {
-      loggernaut.info('MongoDB reconnected');
+    mongoose.connection.on("reconnected", () => {
+      loggernaut.info("MongoDB reconnected");
       this.isConnected = true;
     });
 
     // Reconnect failed event
-    mongoose.connection.on('reconnectFailed', () => {
-      loggernaut.error('MongoDB reconnection failed');
+    mongoose.connection.on("reconnectFailed", () => {
+      loggernaut.error("MongoDB reconnection failed");
       this.isConnected = false;
     });
 
     // Process termination handling
-    process.on('SIGINT', async () => {
+    process.on("SIGINT", async () => {
       await this.disconnect();
     });
 
-    process.on('SIGTERM', async () => {
+    process.on("SIGTERM", async () => {
       await this.disconnect();
     });
   }
@@ -167,12 +173,12 @@ class DatabaseConnection {
     try {
       const url = new URL(uri);
       if (url.username || url.password) {
-        url.username = '****';
-        url.password = '****';
+        url.username = "****";
+        url.password = "****";
       }
       return url.toString();
     } catch {
-      return uri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@');
+      return uri.replace(/\/\/([^:]+):([^@]+)@/, "//$1:****@");
     }
   }
 
@@ -180,7 +186,7 @@ class DatabaseConnection {
    * Delay helper for retry logic
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -195,7 +201,7 @@ class DatabaseConnection {
       await mongoose.connection.db.admin().ping();
       return true;
     } catch (error) {
-      loggernaut.error('Database health check failed:')
+      loggernaut.error("Database health check failed:");
       loggernaut.error(error);
       return false;
     }

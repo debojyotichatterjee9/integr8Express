@@ -132,7 +132,7 @@ router.post('/seed/all', async (req: Request, res: Response) => {
  */
 router.post('/seed/:collection', async (req: Request, res: Response) => {
   try {
-    const collection = req.params.collection.toLowerCase();
+    const collection = String(req.params.collection).toLowerCase();
     const count = parseInt(req.body.count as string) || 50;
     
     let result: number;
